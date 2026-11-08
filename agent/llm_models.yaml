@@ -1,0 +1,29 @@
+# Model presets for agent/llm_client.py (issue #2).
+# Pick one with LLMConfig.from_preset("qwen-7b", backend="ollama") or SIGNALPR_LLM_PRESET / SIGNALPR_LLM_BACKEND.
+# Every backend speaks the OpenAI-compatible /v1/chat/completions API.
+
+backends:
+  ollama:            # laptop or Kaggle (scripts/serve/ollama_local.sh, notebooks/serve_qwen_kaggle.ipynb)
+    base_url: http://localhost:11434/v1
+    api_key: ollama
+  vllm:              # ASU Sol (scripts/serve/sol_vllm.sbatch); point base_url at the node, or use an SSH tunnel
+    base_url: http://localhost:8000/v1
+    api_key: EMPTY
+
+presets:
+  qwen-7b:
+    ollama: qwen2.5-coder:7b
+    vllm: Qwen/Qwen2.5-Coder-7B-Instruct
+  qwen-32b:
+    ollama: qwen2.5-coder:32b
+    vllm: Qwen/Qwen2.5-Coder-32B-Instruct          # bf16, one A100 80GB on Sol
+  qwen-32b-awq:
+    vllm: Qwen/Qwen2.5-Coder-32B-Instruct-AWQ      # 4-bit, fits Kaggle 2x T4 (tensor parallel 2)
+
+defaults:
+  temperature: 0.0     # deterministic first run; specialists use sample > 0 for self-consistency
+  top_p: 1.0
+  seed: 0
+  max_tokens: 1024
+  timeout: 300         # seconds per request
+  max_retries: 5
