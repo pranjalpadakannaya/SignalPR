@@ -1,0 +1,634 @@
+{
+ "source": "AIDev-pop (hao-li/AIDev v5, repositories with >100 stars)",
+ "synthetic": false,
+ "totals": {
+  "prs": 361296,
+  "repos": 25402,
+  "agents": 6,
+  "file_changes": 9160873,
+  "inline_comments_human": 96499,
+  "inline_comments_bot": 179377,
+  "human_reviews": 218243,
+  "population_prs": 80554,
+  "population_files": 1472184,
+  "positive_files": 29309,
+  "positive_rate": 0.019908516870173837,
+  "date_min": "2024-12-24T00:23:09Z",
+  "date_max": "2026-03-31T23:58:42Z",
+  "time_cutoff": "2026-03-07T06:25:09Z",
+  "include_unmerged": false
+ },
+ "splits": {
+  "train": {
+   "files": 826207,
+   "prs": 42378,
+   "repos": 5330,
+   "positive_rate": 0.021375998992988438
+  },
+  "val": {
+   "files": 105744,
+   "prs": 6481,
+   "repos": 775,
+   "positive_rate": 0.02733961264941746
+  },
+  "test": {
+   "files": 64702,
+   "prs": 3658,
+   "repos": 675,
+   "positive_rate": 0.010478810546814626
+  }
+ },
+ "agents": [
+  {
+   "agent": "Claude_Code",
+   "prs": 172597,
+   "merge_rate": 0.717492192795935,
+   "closed_unmerged_rate": 0.19264529510941675,
+   "human_review_rate": 0.23989988238497773,
+   "inline_comment_pr_rate": 0.005961864922333528,
+   "comments_per_reviewed_pr": 0.10974254938897744,
+   "repos": 13934
+  },
+  {
+   "agent": "Copilot",
+   "prs": 98384,
+   "merge_rate": 0.6059318588388356,
+   "closed_unmerged_rate": 0.31625060985526104,
+   "human_review_rate": 0.4245812327207676,
+   "inline_comment_pr_rate": 0.17500813140348023,
+   "comments_per_reviewed_pr": 1.8725222637173227,
+   "repos": 10473
+  },
+  {
+   "agent": "OpenAI_Codex",
+   "prs": 62731,
+   "merge_rate": 0.7521799429309273,
+   "closed_unmerged_rate": 0.1886627026510019,
+   "human_review_rate": 0.08389791331239738,
+   "inline_comment_pr_rate": 0.023991328051521578,
+   "comments_per_reviewed_pr": 0.9726391791753752,
+   "repos": 5473
+  },
+  {
+   "agent": "Cursor",
+   "prs": 12908,
+   "merge_rate": 0.5790982336535482,
+   "closed_unmerged_rate": 0.3261543229005268,
+   "human_review_rate": 0.16888751162070034,
+   "inline_comment_pr_rate": 0.04477843198016734,
+   "comments_per_reviewed_pr": 0.7963302752293578,
+   "repos": 1332
+  },
+  {
+   "agent": "Devin",
+   "prs": 11219,
+   "merge_rate": 0.5875746501470719,
+   "closed_unmerged_rate": 0.36170781709599786,
+   "human_review_rate": 0.4085034316784027,
+   "inline_comment_pr_rate": 0.14662625902486853,
+   "comments_per_reviewed_pr": 1.312022692559459,
+   "repos": 418
+  },
+  {
+   "agent": "Google_Jules",
+   "prs": 3457,
+   "merge_rate": 0.5999421463696847,
+   "closed_unmerged_rate": 0.3361295921319063,
+   "human_review_rate": 0.19785941567833382,
+   "inline_comment_pr_rate": 0.07781313277408157,
+   "comments_per_reviewed_pr": 1.2690058479532165,
+   "repos": 426
+  }
+ ],
+ "monthly": [
+  {
+   "month": "2024-12",
+   "Claude_Code": 0,
+   "Copilot": 0,
+   "Cursor": 0,
+   "Devin": 72,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 0
+  },
+  {
+   "month": "2025-01",
+   "Claude_Code": 0,
+   "Copilot": 0,
+   "Cursor": 0,
+   "Devin": 425,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 0
+  },
+  {
+   "month": "2025-02",
+   "Claude_Code": 29,
+   "Copilot": 0,
+   "Cursor": 1,
+   "Devin": 519,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 0
+  },
+  {
+   "month": "2025-03",
+   "Claude_Code": 259,
+   "Copilot": 1,
+   "Cursor": 0,
+   "Devin": 660,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 0
+  },
+  {
+   "month": "2025-04",
+   "Claude_Code": 298,
+   "Copilot": 0,
+   "Cursor": 1,
+   "Devin": 710,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 0
+  },
+  {
+   "month": "2025-05",
+   "Claude_Code": 573,
+   "Copilot": 1002,
+   "Cursor": 21,
+   "Devin": 937,
+   "Google_Jules": 0,
+   "OpenAI_Codex": 4510
+  },
+  {
+   "month": "2025-06",
+   "Claude_Code": 2622,
+   "Copilot": 2011,
+   "Cursor": 522,
+   "Devin": 638,
+   "Google_Jules": 26,
+   "OpenAI_Codex": 10384
+  },
+  {
+   "month": "2025-07",
+   "Claude_Code": 4382,
+   "Copilot": 3700,
+   "Cursor": 1311,
+   "Devin": 645,
+   "Google_Jules": 60,
+   "OpenAI_Codex": 9972
+  },
+  {
+   "month": "2025-08",
+   "Claude_Code": 4785,
+   "Copilot": 5621,
+   "Cursor": 1119,
+   "Devin": 507,
+   "Google_Jules": 263,
+   "OpenAI_Codex": 6843
+  },
+  {
+   "month": "2025-09",
+   "Claude_Code": 4323,
+   "Copilot": 5728,
+   "Cursor": 814,
+   "Devin": 298,
+   "Google_Jules": 197,
+   "OpenAI_Codex": 2863
+  },
+  {
+   "month": "2025-10",
+   "Claude_Code": 6449,
+   "Copilot": 9127,
+   "Cursor": 759,
+   "Devin": 663,
+   "Google_Jules": 120,
+   "OpenAI_Codex": 3053
+  },
+  {
+   "month": "2025-11",
+   "Claude_Code": 6804,
+   "Copilot": 11790,
+   "Cursor": 803,
+   "Devin": 746,
+   "Google_Jules": 472,
+   "OpenAI_Codex": 1564
+  },
+  {
+   "month": "2025-12",
+   "Claude_Code": 12057,
+   "Copilot": 11852,
+   "Cursor": 1247,
+   "Devin": 1136,
+   "Google_Jules": 1360,
+   "OpenAI_Codex": 1159
+  },
+  {
+   "month": "2026-01",
+   "Claude_Code": 24326,
+   "Copilot": 14490,
+   "Cursor": 1494,
+   "Devin": 1174,
+   "Google_Jules": 832,
+   "OpenAI_Codex": 1710
+  },
+  {
+   "month": "2026-02",
+   "Claude_Code": 40254,
+   "Copilot": 16307,
+   "Cursor": 2083,
+   "Devin": 1149,
+   "Google_Jules": 45,
+   "OpenAI_Codex": 7489
+  },
+  {
+   "month": "2026-03",
+   "Claude_Code": 65436,
+   "Copilot": 16755,
+   "Cursor": 2733,
+   "Devin": 940,
+   "Google_Jules": 82,
+   "OpenAI_Codex": 13184
+  }
+ ],
+ "rate_by_category": [
+  {
+   "key": "docs",
+   "rate": 0.09525902428770709,
+   "n": 52331
+  },
+  {
+   "key": "source code",
+   "rate": 0.09179935998766241,
+   "n": 155622
+  },
+  {
+   "key": "test",
+   "rate": 0.0637941515824473,
+   "n": 80603
+  },
+  {
+   "key": "config",
+   "rate": 0.05891183931252265,
+   "n": 19317
+  },
+  {
+   "key": "other",
+   "rate": 0.05287128712871287,
+   "n": 30300
+  },
+  {
+   "key": "build",
+   "rate": 0.04999557561277763,
+   "n": 11301
+  },
+  {
+   "key": "CI",
+   "rate": 0.041344031393434004,
+   "n": 28541
+  },
+  {
+   "key": "lockfile",
+   "rate": 0.0406479217603912,
+   "n": 3272
+  },
+  {
+   "key": "generated/vendored",
+   "rate": 0.02156152615177293,
+   "n": 11873
+  },
+  {
+   "key": "asset",
+   "rate": 0.005877638258081752,
+   "n": 3743
+  }
+ ],
+ "rate_by_lang": [
+  {
+   "key": "julia",
+   "rate": 0.1978021978021978,
+   "n": 546
+  },
+  {
+   "key": "swift",
+   "rate": 0.1503461918892186,
+   "n": 1011
+  },
+  {
+   "key": "cpp",
+   "rate": 0.1221287241300887,
+   "n": 4397
+  },
+  {
+   "key": "shell",
+   "rate": 0.11184939091915837,
+   "n": 1806
+  },
+  {
+   "key": "java",
+   "rate": 0.10854350983758088,
+   "n": 7573
+  },
+  {
+   "key": "markdown",
+   "rate": 0.1078579168040703,
+   "n": 42454
+  },
+  {
+   "key": "vue",
+   "rate": 0.10367577756833177,
+   "n": 1061
+  },
+  {
+   "key": "dart",
+   "rate": 0.09861111111111111,
+   "n": 1440
+  },
+  {
+   "key": "csharp",
+   "rate": 0.09547614129312125,
+   "n": 48410
+  },
+  {
+   "key": "python",
+   "rate": 0.09258043335521995,
+   "n": 27414
+  },
+  {
+   "key": "r",
+   "rate": 0.09083402146985962,
+   "n": 1211
+  },
+  {
+   "key": "go",
+   "rate": 0.0845266231057973,
+   "n": 21579
+  },
+  {
+   "key": "kotlin",
+   "rate": 0.08163265306122448,
+   "n": 2646
+  },
+  {
+   "key": "c",
+   "rate": 0.08129863160719077,
+   "n": 3727
+  },
+  {
+   "key": "rust",
+   "rate": 0.08049213441880394,
+   "n": 16337
+  },
+  {
+   "key": "haskell",
+   "rate": 0.08024691358024691,
+   "n": 324
+  }
+ ],
+ "rate_by_churn": [
+  {
+   "key": "1-5",
+   "rate": 0.022903685909466256,
+   "n": 133210
+  },
+  {
+   "key": "6-20",
+   "rate": 0.05801426769743239,
+   "n": 103871
+  },
+  {
+   "key": "21-50",
+   "rate": 0.09530287000184728,
+   "n": 59547
+  },
+  {
+   "key": "51-100",
+   "rate": 0.12639109697933226,
+   "n": 37740
+  },
+  {
+   "key": "101-250",
+   "rate": 0.15086350049817338,
+   "n": 36132
+  },
+  {
+   "key": "251-500",
+   "rate": 0.18324316826189485,
+   "n": 14418
+  },
+  {
+   "key": "500+",
+   "rate": 0.1413433458489779,
+   "n": 11985
+  }
+ ],
+ "rate_by_pr_size": [
+  {
+   "key": "1",
+   "rate": 0.10867865519937452,
+   "n": 16627
+  },
+  {
+   "key": "2-3",
+   "rate": 0.09508640251352767,
+   "n": 45832
+  },
+  {
+   "key": "4-5",
+   "rate": 0.07634600540331918,
+   "n": 41456
+  },
+  {
+   "key": "6-10",
+   "rate": 0.0599715187914061,
+   "n": 80755
+  },
+  {
+   "key": "11-20",
+   "rate": 0.04248804174518046,
+   "n": 110384
+  },
+  {
+   "key": "21-50",
+   "rate": 0.02307353921981354,
+   "n": 211411
+  },
+  {
+   "key": "50+",
+   "rate": 0.005765652327436863,
+   "n": 965719
+  }
+ ],
+ "rate_by_status": [
+  {
+   "key": "added",
+   "rate": 0.09208100578018658,
+   "n": 72143
+  },
+  {
+   "key": "modified",
+   "rate": 0.0732271693640483,
+   "n": 300353
+  },
+  {
+   "key": "renamed",
+   "rate": 0.0497131931166348,
+   "n": 12029
+  },
+  {
+   "key": "removed",
+   "rate": 0.00597834868314752,
+   "n": 12378
+  }
+ ],
+ "rate_by_agent": [
+  {
+   "key": "Google_Jules",
+   "rate": 0.09323882224645584,
+   "n": 3668
+  },
+  {
+   "key": "Copilot",
+   "rate": 0.07833646616541354,
+   "n": 297920
+  },
+  {
+   "key": "Claude_Code",
+   "rate": 0.06674606719269516,
+   "n": 20151
+  },
+  {
+   "key": "Devin",
+   "rate": 0.06339139113357586,
+   "n": 31061
+  },
+  {
+   "key": "Cursor",
+   "rate": 0.05534515407126872,
+   "n": 11618
+  },
+  {
+   "key": "OpenAI_Codex",
+   "rate": 0.0514699091888564,
+   "n": 32485
+  }
+ ],
+ "comment_topics": [
+  {
+   "topic": "logic / correctness",
+   "share": 0.11659188178115835
+  },
+  {
+   "topic": "tests",
+   "share": 0.10806329599270459
+  },
+  {
+   "topic": "simplify / remove",
+   "share": 0.10650887573964497
+  },
+  {
+   "topic": "error handling",
+   "share": 0.09066415196012394
+  },
+  {
+   "topic": "docs / comments",
+   "share": 0.07717178416356646
+  },
+  {
+   "topic": "naming / readability",
+   "share": 0.05277774899221754
+  },
+  {
+   "topic": "API / design",
+   "share": 0.049554917667540596
+  },
+  {
+   "topic": "style / formatting",
+   "share": 0.030445911356594368
+  },
+  {
+   "topic": "security",
+   "share": 0.02417641633592058
+  },
+  {
+   "topic": "performance",
+   "share": 0.02137845988041327
+  }
+ ],
+ "task_types": {
+  "feat": 124807,
+  "fix": 116337,
+  "other": 51800,
+  "docs": 18995,
+  "refactor": 16134,
+  "chore": 15571,
+  "test": 8826,
+  "perf": 4825,
+  "ci": 2667,
+  "build": 553
+ },
+ "features": [
+  "additions",
+  "deletions",
+  "changes",
+  "log_changes",
+  "add_ratio",
+  "is_new",
+  "is_removed",
+  "is_renamed",
+  "depth",
+  "name_len",
+  "is_test",
+  "is_doc",
+  "is_ci",
+  "is_lock",
+  "is_generated",
+  "is_build",
+  "is_config",
+  "is_code",
+  "is_asset",
+  "is_agent_rules",
+  "tok_src",
+  "tok_api",
+  "tok_ui",
+  "tok_util",
+  "tok_model",
+  "tok_db",
+  "tok_auth",
+  "tok_config",
+  "tok_example",
+  "tok_scripts",
+  "tok_public_api",
+  "pr_n_files",
+  "pr_additions",
+  "pr_deletions",
+  "pr_log_changes",
+  "churn_share",
+  "churn_rank_pct",
+  "is_largest_file",
+  "pr_n_code_files",
+  "pr_test_share",
+  "pr_has_tests",
+  "pr_n_dirs",
+  "pr_n_langs",
+  "same_dir_files",
+  "lang_matches_repo",
+  "title_len",
+  "body_len_log",
+  "has_issue",
+  "repo_stars_log",
+  "repo_forks_log",
+  "issue_path_overlap",
+  "issue_path_hits",
+  "pr_issue_overlap",
+  "complexity_delta",
+  "branches_added",
+  "repeated_added_lines",
+  "repeated_ratio",
+  "tool_warnings",
+  "tool_security",
+  "tool_critical",
+  "n_hunks",
+  "agent",
+  "lang",
+  "status",
+  "repo_lang",
+  "task_type"
+ ],
+ "patch_features": false
+}
