@@ -1,0 +1,14 @@
+{
+ "id": "docs-config",
+ "agent": "Claude_Code",
+ "repo": "forecastly/weather-sdk",
+ "repo_language": "Python",
+ "stars": 310,
+ "forks": 40,
+ "title": "docs: document WEATHER_API_KEY and test the timeout",
+ "description": "Documents the API key variable and adds a test that the client passes a 10s timeout.",
+ "issue_title": "",
+ "issue_body": "",
+ "diff": "diff --git a/README.md b/README.md\n--- a/README.md\n+++ b/README.md\n@@ -12,2 +12,6 @@\n pip install weather-sdk\n \n+## Configuration\n+\n+Set `WEATHER_API_KEY` in your environment before calling the client.\n+\ndiff --git a/tests/test_client.py b/tests/test_client.py\nnew file mode 100644\n--- /dev/null\n+++ b/tests/test_client.py\n@@ -0,0 +1,8 @@\n+from weather.client import get\n+\n+\n+def test_get_uses_timeout(monkeypatch):\n+    seen = {}\n+    monkeypatch.setattr('requests.get', lambda url, timeout: seen.setdefault('t', timeout))\n+    get('https://x')\n+    assert seen['t'] == 10\n",
+ "gold": []
+}
