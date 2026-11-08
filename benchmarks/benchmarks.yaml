@@ -1,0 +1,58 @@
+# Benchmarks SignalPR is evaluated on. `split` decides what each one may be used for:
+#   dev  -> free to use for prompt/threshold tuning, ablations, debugging
+#   test -> final evaluation only; loading it with purpose="tune" raises (benchmarks/registry.py)
+#
+# Sources are pinned to a commit so every run reads the same ground truth.
+
+martian:
+  split: dev  # DEV ONLY: all tuning happens here (issue #4, #11)
+  description: Martian Code Review Bench, offline set (50 PRs, 5 repos, human-curated golden comments)
+  source_repo: withmartian/code-review-benchmark
+  source_commit: e616e849755441da38f18bf3adba2c9583b03803
+  files:
+    golden: offline/golden_comments/{repo}.json
+    labels: offline/results/pr_labels.json
+  golden_repos: [cal_dot_com, discourse, grafana, keycloak, sentry]
+  # Published numbers the loader is checked against (`python -m benchmarks stats martian`).
+  # Source: offline/README.md "Scoring profiles" and the golden files at source_commit.
+  published:
+    prs: 50
+    repos: 5
+    golden_comments: 173
+    by_profile: {strict: 139, core: 158, all: 173}
+    by_language: {Python: 10, Java: 10, Go: 10, Ruby: 10, TypeScript: 10}
+
+reviewbench:
+  split: test  # TEST ONLY: never use for prompt tuning (issue #5)
+  description: GitHub ReviewBench full set (219 PRs, 187 repos), golden findings with TP/FP labels
+  source_repo: review-bench/ReviewBench
+  source_commit: f223ce33558a6d211fd222b1f7ff2fd7b44403d4
+  files:
+    manifest: corpus/manifest.json
+    golden_dir: golden
+    test_subset: corpus/test/test.json
+  mirror_org: review-bench  # every source repo is mirrored as review-bench/<owner>_<repo>
+  # Published numbers the loader is checked against (`python -m benchmarks stats reviewbench`).
+  # Source: README.md (distribution tables) and docs/METHODOLOGY.md section 5.5 at source_commit.
+  published:
+    prs: 219
+    repos: 187
+    findings: 4632
+    true_positives: 2623
+    by_language: {TypeScript: 68, Python: 41, "C#": 25, Go: 19, JavaScript: 15}
+    by_size_bucket: {xs: 17, s: 40, m: 44, l: 40, xl: 78}  # added+removed lines from the manifest
+    by_source_type_tp: {llm_review: 1391, ccr: 1185, review_comment: 39, tool: 8}
+    test_subset:
+      prs: 25
+      true_positives: 352
+      by_severity_tp: {high: 36, medium: 134, low: 182}
+      by_category_tp:
+        correctness: 133
+        reliability: 58
+        maintainability: 44
+        testing: 35
+        security: 27
+        documentation: 21
+        performance: 12
+        api-architecture: 12
+        accessibility: 10

@@ -1,0 +1,63 @@
+{
+ "id": "retry-client",
+ "agent": "Devin",
+ "repo": "forecastly/weather-sdk",
+ "repo_language": "Python",
+ "stars": 310,
+ "forks": 40,
+ "title": "Retry failed requests in the weather client",
+ "description": "Adds retries with exponential backoff to the HTTP client, plus a pluggable retry strategy framework so we can add more strategies later.",
+ "issue_title": "Weather client should retry on 503",
+ "issue_body": "The API sometimes returns 503. The client should retry up to 3 times before failing. Keep the existing 10 second timeout.",
+ "diff": "diff --git a/weather/client.py b/weather/client.py\n--- a/weather/client.py\n+++ b/weather/client.py\n@@ -1,4 +1,62 @@\n-import requests\n-\n-def get(url):\n-    return requests.get(url, timeout=10)\n+import time\n+import random\n+import requests\n+\n+\n+class RetryStrategy:\n+    def delay(self, attempt):\n+        raise NotImplementedError\n+\n+\n+class ExponentialRetryStrategy(RetryStrategy):\n+    def __init__(self, base=0.5, cap=30, jitter=True):\n+        self.base = base\n+        self.cap = cap\n+        self.jitter = jitter\n+\n+    def delay(self, attempt):\n+        d = min(self.cap, self.base * (2 ** attempt))\n+        return d * random.random() if self.jitter else d\n+\n+\n+class RetryStrategyFactory:\n+    _registry = {}\n+\n+    @classmethod\n+    def register(cls, name, strategy):\n+        cls._registry[name] = strategy\n+\n+    @classmethod\n+    def create(cls, name, **kwargs):\n+        return cls._registry[name](**kwargs)\n+\n+\n+def _legacy_backoff(attempt):\n+    return 2 ** attempt\n+\n+\n+def get_with_retry(url, retries=3, statuses=[500, 502, 503], strategy=None, hooks={}):\n+    strategy = strategy or ExponentialRetryStrategy()\n+    last = None\n+    for attempt in range(retries + 1):\n+        try:\n+            resp = requests.get(url)\n+            if resp.status_code in statuses:\n+                if attempt < retries:\n+                    if \"on_retry\" in hooks:\n+                        hooks[\"on_retry\"](attempt, resp)\n+                    time.sleep(strategy.delay(attempt))\n+                    continue\n+                else:\n+                    resp.raise_for_status()\n+            return resp\n+        except requests.ConnectionError as e:\n+            last = e\n+            if attempt < retries:\n+                if \"on_error\" in hooks:\n+                    if hooks[\"on_error\"](attempt, e) is False:\n+                        break\n+                time.sleep(strategy.delay(attempt))\n+            else:\n+                raise\n+    raise last\n",
+ "gold": [
+  {
+   "file": "weather/client.py",
+   "line": 43,
+   "severity": "medium",
+   "type": "correctness",
+   "description": "timeout of 10 seconds removed; requests.get without timeout contrary to issue",
+   "match": "resp = requests.get(url)"
+  },
+  {
+   "file": "weather/client.py",
+   "line": 38,
+   "severity": "medium",
+   "type": "correctness",
+   "description": "mutable default arguments statuses list and hooks dict",
+   "match": "def get_with_retry"
+  },
+  {
+   "file": "weather/client.py",
+   "line": 22,
+   "severity": "medium",
+   "type": "maintainability",
+   "description": "RetryStrategyFactory registry is over-engineering nobody asked for and is unused",
+   "match": "class RetryStrategyFactory"
+  },
+  {
+   "file": "weather/client.py",
+   "line": 34,
+   "severity": "low",
+   "type": "maintainability",
+   "description": "_legacy_backoff defined but never used dead code",
+   "match": "def _legacy_backoff"
+  },
+  {
+   "file": "weather/client.py",
+   "line": 38,
+   "severity": "low",
+   "type": "maintainability",
+   "description": "get_with_retry is deeply nested and complex",
+   "match": "def get_with_retry"
+  },
+  {
+   "file": "weather/client.py",
+   "line": 38,
+   "severity": "medium",
+   "type": "testing",
+   "description": "no tests for retry behaviour",
+   "match": "def get_with_retry"
+  }
+ ]
+}

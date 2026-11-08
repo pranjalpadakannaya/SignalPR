@@ -1,0 +1,79 @@
+{
+ "id": "flask-user-search",
+ "agent": "OpenAI_Codex",
+ "repo": "acme/team-portal",
+ "repo_language": "Python",
+ "stars": 640,
+ "forks": 88,
+ "title": "Add user search endpoint",
+ "description": "Adds `/api/users/search` so the admin page can search users by name.\n\nCo-authored by Codex.",
+ "issue_title": "Admin page needs user search",
+ "issue_body": "The admin page should let admins search users by name.\n\n- Add an endpoint that returns matching users (id, name, email)\n- Support a `limit` parameter, default 20, max 100\n- Return 400 when the query is empty\n- Add tests for the endpoint",
+ "diff": "diff --git a/app/routes/search.py b/app/routes/search.py\nnew file mode 100644\n--- /dev/null\n+++ b/app/routes/search.py\n@@ -0,0 +1,30 @@\n+import sqlite3\n+import requests\n+from flask import Blueprint, request, jsonify\n+\n+bp = Blueprint(\"search\", __name__)\n+API_KEY = \"not-a-real-key-7f3a9c2e81d4\"\n+\n+\n+def get_db():\n+    return sqlite3.connect(\"app.db\")\n+\n+\n+@bp.route(\"/api/users/search\")\n+def search_users():\n+    q = request.args.get(\"q\", \"\")\n+    limit = int(request.args.get(\"limit\", 20))\n+    db = get_db()\n+    try:\n+        rows = db.execute(f\"SELECT id, name, email FROM users WHERE name LIKE '%{q}%' LIMIT {limit}\").fetchall()\n+    except:\n+        rows = []\n+    print(\"search\", q, len(rows))\n+    results = [{\"id\": r[0], \"name\": r[1], \"email\": r[2]} for r in rows]\n+    return jsonify(results)\n+\n+\n+@bp.route(\"/api/users/<int:user_id>/avatar\")\n+def avatar(user_id):\n+    resp = requests.get(f\"https://avatars.example.com/{user_id}\", headers={\"X-Key\": API_KEY})\n+    return resp.content\ndiff --git a/app/settings.py b/app/settings.py\n--- a/app/settings.py\n+++ b/app/settings.py\n@@ -3,4 +3,6 @@\n import os\n \n-DEBUG = False\n-DATABASE = os.environ.get(\"DATABASE_URL\", \"app.db\")\n+DEBUG = True\n+DATABASE = os.environ.get(\"DATABASE_URL\", \"app.db\")\n+THEME = \"dark\"\n+ENABLE_BETA_DASHBOARD = True\ndiff --git a/app/__init__.py b/app/__init__.py\n--- a/app/__init__.py\n+++ b/app/__init__.py\n@@ -8,2 +8,4 @@\n def create_app():\n     app = Flask(__name__)\n+from app.routes.search import bp as search_bp\n+    app.register_blueprint(search_bp)\n",
+ "gold": [
+  {
+   "file": "app/routes/search.py",
+   "line": 19,
+   "severity": "critical",
+   "type": "security",
+   "description": "SQL injection: query built with f-string from request input q and limit",
+   "match": "db.execute(f\"SELECT"
+  },
+  {
+   "file": "app/routes/search.py",
+   "line": 6,
+   "severity": "critical",
+   "type": "security",
+   "description": "hard-coded API key secret committed in source",
+   "match": "API_KEY = \"not-a-real-key"
+  },
+  {
+   "file": "app/routes/search.py",
+   "line": 20,
+   "severity": "medium",
+   "type": "correctness",
+   "description": "bare except swallows database errors and returns empty list",
+   "match": "except:"
+  },
+  {
+   "file": "app/routes/search.py",
+   "line": 16,
+   "severity": "medium",
+   "type": "correctness",
+   "description": "limit not capped at 100 and empty query not rejected with 400 as the issue requires",
+   "match": "limit = int("
+  },
+  {
+   "file": "app/routes/search.py",
+   "line": 29,
+   "severity": "medium",
+   "type": "correctness",
+   "description": "requests.get without timeout can hang",
+   "match": "requests.get(f\"https://avatars"
+  },
+  {
+   "file": "app/settings.py",
+   "line": 5,
+   "severity": "medium",
+   "type": "security",
+   "description": "DEBUG turned on in settings; unrelated change",
+   "match": "DEBUG = True"
+  },
+  {
+   "file": "app/settings.py",
+   "line": 7,
+   "severity": "low",
+   "type": "maintainability",
+   "description": "unrequested theme and beta dashboard flags added",
+   "match": "THEME = \"dark\""
+  },
+  {
+   "file": "app/routes/search.py",
+   "line": 14,
+   "severity": "medium",
+   "type": "testing",
+   "description": "no tests added although the issue asks for tests",
+   "match": "def search_users"
+  }
+ ]
+}
