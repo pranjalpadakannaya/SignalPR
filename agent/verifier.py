@@ -12,20 +12,22 @@ from __future__ import annotations
 import math
 import re
 
+from agent.specialists import FILE_LEVEL_RULES
 from agent.state import SEVERITY_ORDER, Comment, Evidence, PRInput
 
 _norm = lambda s: re.sub(r"\s+", " ", (s or "").strip().strip("+").strip())  # noqa: E731
 BACKTICK = re.compile(r"`([A-Za-z_][\w.]{2,60})`")
 
 
-def _locate(f, quote: str) -> int | None:
+def _locate(f, quote: str, near: int | None = None) -> int | None:
+    """The added line holding the quoted code; if several do, the one closest to `near`."""
     q = _norm(quote)
     if len(q) < 4:
         return None
-    for no, t in f.added_lines():
-        if q in _norm(t) or (len(_norm(t)) > 8 and _norm(t) in q):
-            return no
-    return None
+    hits = [no for no, t in f.added_lines() if q in _norm(t) or (len(_norm(t)) > 8 and _norm(t) in q)]
+    if not hits:
+        return None
+    return min(hits, key=lambda no: abs(no - near)) if near is not None else hits[0]
 
 
 def _anchor(c: Comment, pr: PRInput) -> str | None:
@@ -37,7 +39,7 @@ def _anchor(c: Comment, pr: PRInput) -> str | None:
     if not changed:
         return "file has no added lines to comment on"
     if c.line is None or c.line not in changed:
-        loc = _locate(f, c.quote) if c.quote else None
+        loc = _locate(f, c.quote, c.line) if c.quote else None
         if loc is not None:
             c.line = loc
         elif c.line is not None:
@@ -61,7 +63,8 @@ def _support(c: Comment, pr: PRInput, ev: dict[str, Evidence]) -> str | None:
             tool_ok.append(eid)
             continue
         e = ev.get(eid)
-        if e and pr.file(e.file) is f and (e.line is None or abs((e.line or 0) - c.line) <= 3):
+        file_level = e is not None and e.rule in FILE_LEVEL_RULES  # e.g. no-tests: anchored on the main function
+        if e and pr.file(e.file) is f and (e.line is None or file_level or abs((e.line or 0) - c.line) <= 3):
             tool_ok.append(eid)
     if not tool_ok:  # a tool finding on the same line, same category and similar wording also counts
         for e in ev.values():
@@ -205,4 +208,29 @@ def verify(
         dropped.append(b)
         if a is not dup:
             final[final.index(dup)] = a
+    final = _collapse_repeats(final, ev, dropped)
     return {"kept": final, "dropped": dropped}
+
+
+def _collapse_repeats(comments: list[Comment], ev: dict[str, Evidence], dropped: list[Comment]) -> list[Comment]:
+    """One comment per tool rule per file: later hits of the same rule are listed in the first one.
+
+    Five "float used for money" comments in one file cost a reader five reads for one problem.
+    """
+    out: list[Comment] = []
+    first: dict[tuple, Comment] = {}
+    for c in comments:
+        rules = {ev[i].rule for i in c.evidence if i in ev}
+        key = (c.file, c.category, next(iter(rules))) if not c.from_llm and len(rules) == 1 else None
+        if key is None or key not in first:
+            if key is not None:
+                first[key] = c
+            out.append(c)
+            continue
+        k = first[key]
+        k.body += ("\n\nSame pattern also at line " if "Same pattern also at" not in k.body else ", ") + str(c.line)
+        k.evidence = sorted(set(k.evidence) | set(c.evidence))
+        k.severity = max([k.severity, c.severity], key=SEVERITY_ORDER.get)
+        c.drop_reason = f"same {key[2]} finding as line {k.line}; listed there"
+        dropped.append(c)
+    return out

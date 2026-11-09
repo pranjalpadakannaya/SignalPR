@@ -12,7 +12,9 @@ each specialist turns its evidence into concrete, line-anchored comments.
 from __future__ import annotations
 
 import concurrent.futures as cf
+import re
 
+from agent import intent as intent_step
 from agent import llm
 from agent.state import Comment, Evidence, PRInput
 from risk.features import GEN_RE, LOCK_RE
@@ -83,6 +85,84 @@ def _short(msg: str, n: int = 90) -> str:
     return s if len(s) <= n else s[: n - 1] + "…"
 
 
+DEF_RE = re.compile(
+    r"^\s*(?:export\s+)?(?:async\s+)?(?:def|class|function|func|fn)\s+\w"
+    r"|^\s*(?:export\s+)?(?:const|let|var)\s+\w+\s*=\s*(?:async\s*)?(?:\([^)]*\)|\w+)\s*=>"
+    r"|^\s*@\w+(?:\.\w+)*\("  # a decorated route/handler, e.g. @app.route("/search")
+)
+
+
+FILE_LEVEL_RULES = {"no-tests"}  # findings about a whole file; the collector puts them on its first line
+
+
+def default_line(f) -> int | None:
+    """Where to anchor a file-level finding: the largest new definition, else the first change.
+
+    "No tests for this change" reads best on the main function it is about, not on an import at
+    the top of the file. A definition's size runs to the next new definition (or the last added line).
+    """
+    added = f.added_lines()
+    if not added:
+        return None
+    defs = [no for no, text in added if DEF_RE.match(text) and not text.lstrip().startswith("@")]
+    if not defs:
+        return added[0][0]
+    ends = defs[1:] + [added[-1][0] + 1]
+    return max(zip(defs, ends), key=lambda d: (d[1] - d[0], -d[0]))[0]
+
+
+def requirement_comments(pr: PRInput, intent: dict, limit: int = 3) -> list[Comment]:
+    """Turn requirements the intent checker marked missing/partial into line-anchored comments.
+
+    Requirements about tests are skipped (the evidence collector's "no-tests" finding covers them).
+    A requirement is anchored to the changed line that shares the most words with it; one with no
+    related changed line is left to the review summary rather than pinned to an arbitrary line.
+    Requirements that land within 3 lines of each other are folded into one comment.
+    """
+    groups: list[dict] = []
+    for r in intent.get("requirements", []):
+        if r.get("status") not in ("missing", "partial") or intent_step.is_test_requirement(r.get("text", "")):
+            continue
+        at = intent_step.best_line(pr, r["text"], r.get("files"))
+        if at is None:
+            continue
+        g = next((g for g in groups if g["file"] == at[0] and abs(g["line"] - at[1]) <= 3), None)
+        if g is None:
+            g = {"file": at[0], "line": at[1], "reqs": []}
+            groups.append(g)
+        g["reqs"].append(r)
+    out = []
+    for g in groups[:limit]:
+        reqs = g["reqs"]
+        lines = []
+        for r in reqs:
+            why = r.get("evidence") or (
+                "none of " + ", ".join(f"`{t}`" for t in r["missing_terms"][:4]) + " appear in the change"
+                if r.get("missing_terms")
+                else ""
+            )
+            lines.append(f"- [{r['status']}] {r['text']}" + (f" ({why})" if why else ""))
+        one = len(reqs) == 1
+        out.append(
+            Comment(
+                file=g["file"],
+                line=g["line"],
+                category="intent",
+                severity="medium" if any(r["status"] == "missing" for r in reqs) else "low",
+                title="Scope: requirement not fully met: " + _short(reqs[0]["text"], 70)
+                if one
+                else "Scope: requirements from the issue not fully met",
+                body=("The issue asks for something" if one else "The issue asks for things")
+                + " this change does not clearly do:\n"
+                + "\n".join(lines),
+                source="design/tools",
+                evidence=[f"intent:{r['id']}" for r in reqs],
+                suggestion="Implement it here (and cover it with a test), or say in the PR why it is out of scope.",
+            )
+        )
+    return out
+
+
 def tool_comments(name: str, pr: PRInput, evidence: list[Evidence], intent: dict) -> list[Comment]:
     cats = SPECIALISTS[name]["cats"]
     out = []
@@ -91,8 +171,11 @@ def tool_comments(name: str, pr: PRInput, evidence: list[Evidence], intent: dict
             continue
         f = pr.file(e.file)
         line = e.line
-        if line is None and f is not None and f.changed_lines():
-            line = min(f.changed_lines())
+        quote = e.snippet
+        if f is not None and (line is None or e.rule in FILE_LEVEL_RULES):
+            moved = default_line(f)
+            if moved is not None and moved != line:
+                line, quote = moved, ""  # the collector's snippet belongs to the old line
         sug = SUGGEST.get(e.rule) or SUGGEST.get(e.rule.split(".")[-1]) or ""
         body = e.message + (f" Found by {e.tool} ({e.rule})." if e.tool != "rules" else "")
         out.append(
@@ -105,7 +188,7 @@ def tool_comments(name: str, pr: PRInput, evidence: list[Evidence], intent: dict
                 body=body,
                 source=f"{name}/tools",
                 evidence=[e.id],
-                quote=e.snippet,
+                quote=quote,
                 suggestion=sug,
             )
         )
@@ -129,6 +212,7 @@ def tool_comments(name: str, pr: PRInput, evidence: list[Evidence], intent: dict
                     suggestion="Split unrelated changes into their own PR.",
                 )
             )
+        out.extend(requirement_comments(pr, intent))
     return out
 
 
