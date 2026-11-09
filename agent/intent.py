@@ -66,7 +66,43 @@ def extract_requirements(pr: PRInput, limit: int = 8) -> list[str]:
         if k not in seen and len(_tokens(c)) >= 1:
             seen.add(k)
             out.append(c)
+    # drop a requirement whose words are all contained in another one, e.g. the issue title
+    # "Admin page needs user search" next to "The admin page should let admins search users by name."
+    toks = [_tokens(c) for c in out]
+    out = [c for i, c in enumerate(out) if not any(j != i and toks[i] < toks[j] for j in range(len(out)))]
     return out[:limit]
+
+
+def is_test_requirement(text: str) -> bool:
+    return bool(re.search(r"\btests?\b|\bunit test|coverage", text or "", re.I))
+
+
+# words that appear on so many lines of code that sharing one says nothing about a requirement
+CODE_WORDS = set(
+    """return true false none null self this def class function const let var import export async await
+try except catch finally raise throw print value values result data list dict string str int type error""".split()
+)
+
+
+def best_line(pr: PRInput, text: str, files: list[str] | None = None) -> tuple[str, int] | None:
+    """The added line that shares the most words with `text` (ties: earliest), or None if none do.
+
+    Generic code words ("return", "self", ...) are ignored, so "Return 400 when the query is empty"
+    is not pinned to an unrelated `return` line.
+    """
+    want = _tokens(text) - CODE_WORDS
+    if not want:
+        return None
+    cands = [pr.file(p) for p in files or []] or list(pr.files)
+    best, best_n = None, 0
+    for f in cands:
+        if f is None or TEST_RE.search(f.path) or DOC_RE.search(f.path) or LOCK_RE.search(f.path):
+            continue
+        for no, t in f.added_lines():
+            n = len(want & _tokens(t))
+            if n > best_n:
+                best, best_n = (f.path, no), n
+    return best
 
 
 def _offline(pr: PRInput) -> dict:
@@ -84,7 +120,7 @@ def _offline(pr: PRInput) -> dict:
             continue
         hit = rt & all_tokens
         cov = len(hit) / len(rt)
-        if re.search(r"\btests?\b|\bunit test|coverage", r, re.I) and not has_tests:
+        if is_test_requirement(r) and not has_tests:
             cov = 0.0
         status = "covered" if cov >= 0.5 else ("partial" if cov >= 0.25 else "missing")
         files = sorted(file_tokens, key=lambda p: -len(rt & file_tokens[p]))
@@ -156,15 +192,20 @@ def check_intent(pr: PRInput, use_llm: bool) -> dict:
         reqs = [r for r in (data or {}).get("requirements", []) if isinstance(r, dict) and r.get("text")]
         if not reqs:
             return base
-        paths = {f.path for f in pr.files}
         for i, r in enumerate(reqs):
-            r.setdefault("id", f"R{i + 1}")
+            r["id"] = str(r.get("id") or f"R{i + 1}")
             r["status"] = (
                 r.get("status", "partial") if r.get("status") in ("covered", "partial", "missing") else "partial"
             )
-            r["files"] = [p for p in r.get("files", []) if isinstance(p, str) and pr.file(p)]
+            files = r.get("files") or []
+            files = [files] if isinstance(files, str) else files  # a model may return one path as a string
+            r["files"] = list(dict.fromkeys(pr.file(p).path for p in files if isinstance(p, str) and pr.file(p)))
             r["coverage"] = {"covered": 1.0, "partial": 0.5, "missing": 0.0}[r["status"]]
-        unreq = [u for u in data.get("unrequested", []) if isinstance(u, dict) and u.get("file") in paths]
+        unreq = []
+        for u in data.get("unrequested") or []:  # same tolerant path matching as the requirements
+            f = pr.file(u.get("file", "")) if isinstance(u, dict) and isinstance(u.get("file"), str) else None
+            if f is not None and f.path not in {x["file"] for x in unreq}:
+                unreq.append({**u, "file": f.path})
         n = len(reqs)
         return {
             "mode": "llm",
@@ -177,3 +218,4 @@ def check_intent(pr: PRInput, use_llm: bool) -> dict:
     except Exception as e:
         base["llm_error"] = str(e)[:200]
         return base
+    
