@@ -213,3 +213,19 @@ def test_cli(monkeypatch, tmp_path, capsys):
     res = json.loads(out.read_text())
     assert res["options"]["ranker"] is False and res["comments"]
     assert "comment(s)" in capsys.readouterr().out
+
+
+def test_graph_node_names_do_not_clash_with_state_keys():
+    # LangGraph refuses a node whose name is also a state key
+    keys = set(pipeline.ReviewState.__annotations__)
+    ids = {pipeline.node_id(name) for name, _ in pipeline.NODES}
+    assert len(ids) == len(pipeline.NODES) and not ids & keys
+
+
+def test_langgraph_path(monkeypatch):
+    pytest.importorskip("langgraph")  # runs only where langgraph is installed
+    offline(monkeypatch)
+    assert pipeline.build_graph() is not None
+    res = pipeline.review(PRInput.from_diff(DIFF, title="Add user search"))
+    assert [t["step"] for t in res["trace"]] == ["intent", "evidence", "specialists", "verifier", "ranker"]
+    assert res["comments"]
