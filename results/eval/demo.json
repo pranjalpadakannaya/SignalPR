@@ -1,0 +1,598 @@
+{
+ "benchmark": "demo",
+ "subset": null,
+ "profile": null,
+ "n_prs": 4,
+ "n_known_issues": 19,
+ "llm": null,
+ "judge": "lexical",
+ "repeats": 1,
+ "created": "2026-11-08 13:43",
+ "systems": {
+  "SignalPR (full)": {
+   "precision": 0.7142857142857143,
+   "recall": 0.7894736842105263,
+   "f1": 0.7500000000000001,
+   "sev_weighted_recall": 0.8205128205128205,
+   "comments_per_real_issue": 1.4,
+   "comments": 21,
+   "true_positives": 15,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.10526315789473684,
+   "recall@3": 0.42105263157894735,
+   "recall@5": 0.6842105263157895,
+   "ci95": {
+    "precision": [
+     0.6666666666666666,
+     0.75
+    ],
+    "recall": [
+     0.6666666666666666,
+     1.0
+    ],
+    "f1": [
+     0.6666666666666666,
+     0.8333333333333333
+    ]
+   },
+   "seconds": 0.7,
+   "per_pr": [
+    {
+     "n_comments": 7,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 5,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 8,
+     "n_gold": 8,
+     "tp": 6,
+     "matched_fp": 0,
+     "sev_found": 15.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 4,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 6,
+     "n_gold": 6,
+     "tp": 4,
+     "matched_fp": 0,
+     "sev_found": 7.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "Code-analysis tools only": {
+   "precision": 0.6296296296296297,
+   "recall": 0.8947368421052632,
+   "f1": 0.7391304347826088,
+   "sev_weighted_recall": 0.8974358974358975,
+   "comments_per_real_issue": 1.588235294117647,
+   "comments": 27,
+   "true_positives": 17,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.10526315789473684,
+   "recall@3": 0.42105263157894735,
+   "recall@5": 0.6842105263157895,
+   "ci95": {
+    "precision": [
+     0.5555555555555556,
+     0.7
+    ],
+    "recall": [
+     0.8333333333333334,
+     1.0
+    ],
+    "f1": [
+     0.7142857142857143,
+     0.7777777777777777
+    ]
+   },
+   "seconds": 0.4,
+   "per_pr": [
+    {
+     "n_comments": 9,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 5,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 10,
+     "n_gold": 8,
+     "tp": 7,
+     "matched_fp": 0,
+     "sev_found": 17.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 4,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 8,
+     "n_gold": 6,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 8.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "SignalPR, ranked by change size": {
+   "precision": 0.7142857142857143,
+   "recall": 0.7894736842105263,
+   "f1": 0.7500000000000001,
+   "sev_weighted_recall": 0.8205128205128205,
+   "comments_per_real_issue": 1.4,
+   "comments": 21,
+   "true_positives": 15,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.05263157894736842,
+   "recall@3": 0.3684210526315789,
+   "recall@5": 0.5789473684210527,
+   "ci95": {
+    "precision": [
+     0.6666666666666666,
+     0.75
+    ],
+    "recall": [
+     0.6666666666666666,
+     1.0
+    ],
+    "f1": [
+     0.6666666666666666,
+     0.8333333333333333
+    ]
+   },
+   "seconds": 0.3,
+   "per_pr": [
+    {
+     "n_comments": 7,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 4,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 8,
+     "n_gold": 8,
+     "tp": 6,
+     "matched_fp": 0,
+     "sev_found": 15.0,
+     "sev_total": 19.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 3,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 6,
+     "n_gold": 6,
+     "tp": 4,
+     "matched_fp": 0,
+     "sev_found": 7.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "\u2013 intent checker": {
+   "precision": 0.7,
+   "recall": 0.7368421052631579,
+   "f1": 0.717948717948718,
+   "sev_weighted_recall": 0.7948717948717948,
+   "comments_per_real_issue": 1.4285714285714286,
+   "comments": 20,
+   "true_positives": 14,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.10526315789473684,
+   "recall@3": 0.42105263157894735,
+   "recall@5": 0.6842105263157895,
+   "ci95": {
+    "precision": [
+     0.6666666666666666,
+     0.7142857142857143
+    ],
+    "recall": [
+     0.625,
+     1.0
+    ],
+    "f1": [
+     0.6666666666666666,
+     0.8333333333333333
+    ]
+   },
+   "seconds": 0.3,
+   "per_pr": [
+    {
+     "n_comments": 7,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 5,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 7,
+     "n_gold": 8,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 14.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 4,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 6,
+     "n_gold": 6,
+     "tp": 4,
+     "matched_fp": 0,
+     "sev_found": 7.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "\u2013 evidence collector": {
+   "precision": 1.0,
+   "recall": 0.05263157894736842,
+   "f1": 0.1,
+   "sev_weighted_recall": 0.02564102564102564,
+   "comments_per_real_issue": 1.0,
+   "comments": 1,
+   "true_positives": 1,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.05263157894736842,
+   "recall@3": 0.05263157894736842,
+   "recall@5": 0.05263157894736842,
+   "ci95": {
+    "precision": [
+     0.0,
+     1.0
+    ],
+    "recall": [
+     0.0,
+     0.125
+    ],
+    "f1": [
+     0.0,
+     0.2222222222222222
+    ]
+   },
+   "seconds": 0.2,
+   "per_pr": [
+    {
+     "n_comments": 0,
+     "n_gold": 5,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 1,
+     "n_gold": 8,
+     "tp": 1,
+     "matched_fp": 0,
+     "sev_found": 1.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 1,
+     "found@5": 1,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 6,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "\u2013 verifier": {
+   "precision": 0.6296296296296297,
+   "recall": 0.8947368421052632,
+   "f1": 0.7391304347826088,
+   "sev_weighted_recall": 0.8974358974358975,
+   "comments_per_real_issue": 1.588235294117647,
+   "comments": 27,
+   "true_positives": 17,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.10526315789473684,
+   "recall@3": 0.42105263157894735,
+   "recall@5": 0.6842105263157895,
+   "ci95": {
+    "precision": [
+     0.5555555555555556,
+     0.7
+    ],
+    "recall": [
+     0.8333333333333334,
+     1.0
+    ],
+    "f1": [
+     0.7142857142857143,
+     0.7777777777777777
+    ]
+   },
+   "seconds": 0.2,
+   "per_pr": [
+    {
+     "n_comments": 9,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 5,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 10,
+     "n_gold": 8,
+     "tp": 7,
+     "matched_fp": 0,
+     "sev_found": 17.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 4,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 8,
+     "n_gold": 6,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 8.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  },
+  "\u2013 risk ranker": {
+   "precision": 0.7142857142857143,
+   "recall": 0.7894736842105263,
+   "f1": 0.7500000000000001,
+   "sev_weighted_recall": 0.8205128205128205,
+   "comments_per_real_issue": 1.4,
+   "comments": 21,
+   "true_positives": 15,
+   "matched_judged_fp": 0,
+   "known_issues": 19,
+   "recall@1": 0.10526315789473684,
+   "recall@3": 0.3684210526315789,
+   "recall@5": 0.6842105263157895,
+   "ci95": {
+    "precision": [
+     0.6666666666666666,
+     0.75
+    ],
+    "recall": [
+     0.6666666666666666,
+     1.0
+    ],
+    "f1": [
+     0.6666666666666666,
+     0.8333333333333333
+    ]
+   },
+   "seconds": 0.2,
+   "per_pr": [
+    {
+     "n_comments": 7,
+     "n_gold": 5,
+     "tp": 5,
+     "matched_fp": 0,
+     "sev_found": 10.0,
+     "sev_total": 10.0,
+     "found@1": 1,
+     "found@3": 3,
+     "found@5": 5,
+     "id": "cart-rounding",
+     "rep": 0
+    },
+    {
+     "n_comments": 0,
+     "n_gold": 0,
+     "tp": 0,
+     "matched_fp": 0,
+     "sev_found": 0,
+     "sev_total": 0,
+     "found@1": 0,
+     "found@3": 0,
+     "found@5": 0,
+     "id": "docs-config",
+     "rep": 0
+    },
+    {
+     "n_comments": 8,
+     "n_gold": 8,
+     "tp": 6,
+     "matched_fp": 0,
+     "sev_found": 15.0,
+     "sev_total": 19.0,
+     "found@1": 1,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "flask-user-search",
+     "rep": 0
+    },
+    {
+     "n_comments": 6,
+     "n_gold": 6,
+     "tp": 4,
+     "matched_fp": 0,
+     "sev_found": 7.0,
+     "sev_total": 10.0,
+     "found@1": 0,
+     "found@3": 2,
+     "found@5": 4,
+     "id": "retry-client",
+     "rep": 0
+    }
+   ]
+  }
+ },
+ "skipped": {
+  "Single-prompt LLM (same model)": "needs an LLM (none reachable)",
+  "\u2013 self-consistency": "needs an LLM (none reachable)"
+ }
+}

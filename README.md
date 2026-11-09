@@ -13,10 +13,10 @@ single-prompt and PR-Agent baselines on two code-review benchmarks.
 | `benchmarks/` | Martian (dev) and ReviewBench (test) loaded into one `PRExample` format, repo checkout | #4, #5 |
 | `risk/` | File-level risk model trained on AIDev: which files reviewers comment on | #10 |
 | `tools/` | Shared static-analysis runners (Ruff, ESLint, Semgrep, Lizard, built-in rules) and a diff parser | #10 |
-| `agent/` | Shared LLM client (`llm_client.py`) and model presets; the agent pipeline goes here | #2, #11 |
+| `agent/` | Review pipeline (intent → evidence → specialists → verifier → risk ranker), baselines, CLI; shared LLM client (`llm_client.py`) | #2, #11 |
 | `scripts/serve/` | Serving Qwen-Coder with vLLM (ASU Sol) or Ollama (laptop / Kaggle) | #2 |
-| `eval/` | Evaluation harness (planned) | #7 |
-| `app/` | GitHub App and dashboard (planned) | #13 |
+| `eval/` | Evaluation harness: systems, baselines, ablations, metrics, LLM judge | #7 |
+| `app/` | Web dashboard (React) and GitHub App webhook | #13 |
 | `notebooks/` | Kaggle notebook for serving the model | #2 |
 | `results/` | Committed metrics and figures | |
 | `tests/` | `pytest` suite, one folder per package | |
@@ -60,6 +60,23 @@ test = load_benchmark("reviewbench", purpose="eval")  # final evaluation only
 python -m risk download && python -m risk mine && python -m risk train && python -m risk report
 ```
 Or copy `models/risk_model.joblib` from the team drive and call `risk.predict_risk(files, pr)`.
+
+**Review a PR** ([agent/README.md](agent/README.md))
+```bash
+python -m agent review --sample flask-user-search            # demo PR; tool evidence only without a model
+python -m agent review --url https://github.com/owner/repo/pull/123
+```
+
+**Evaluate** ([eval/README.md](eval/README.md))
+```bash
+python -m eval --bench martian --repeats 3                    # DEV set
+python -m eval --bench reviewbench --subset test_subset       # TEST set, frozen config only
+```
+
+**Web app** ([app/README.md](app/README.md))
+```bash
+python -m app        # http://localhost:8000
+```
 
 **LLM serving and client** ([scripts/serve/README.md](scripts/serve/README.md))
 ```bash

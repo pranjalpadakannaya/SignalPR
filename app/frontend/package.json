@@ -1,0 +1,18 @@
+{
+  "name": "signalpr-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "SignalPR dashboard (React 19). The built output in ../static is committed, so Node is only needed to change the UI.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --watch"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
