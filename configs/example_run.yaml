@@ -1,0 +1,14 @@
+# Example run config (issue #3). Copy it, fill it in, and keep it next to the run it describes.
+# python -m tracking log writes the same fields automatically to results/runs/<run_id>/config.yaml.
+
+benchmark: martian          # martian (dev) | reviewbench (test) | demo
+subset: null                # reviewbench: test_subset
+profile: core               # martian scoring profile
+systems: null               # null = all systems and ablations
+repeats: 3
+self_consistency_runs: 3    # samples per specialist
+judge: auto                 # auto | lexical | llm
+model: qwen2.5-coder:7b     # see agent/llm_models.yaml
+prompt_version: v1          # see prompts/README.md
+seed: 0
+notes: ""
