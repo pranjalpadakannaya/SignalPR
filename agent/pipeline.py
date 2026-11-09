@@ -153,6 +153,10 @@ def _timed(name, fn, progress):
 
     return run
 
+def node_id(name: str) -> str:
+    """LangGraph node names may not repeat a state key ("intent", "evidence", ... are both)."""
+    return f"{name}_step"
+
 
 def build_graph(progress=None):
     """Compile the LangGraph graph, or return None if langgraph is not installed."""
@@ -162,11 +166,11 @@ def build_graph(progress=None):
         return None
     g = StateGraph(ReviewState)
     for name, fn in NODES:
-        g.add_node(name, _timed(name, fn, progress))
-    g.set_entry_point(NODES[0][0])
+        g.add_node(node_id(name), _timed(name, fn, progress))
+    g.set_entry_point(node_id(NODES[0][0]))
     for (a, _), (b, _) in zip(NODES, NODES[1:]):
-        g.add_edge(a, b)
-    g.add_edge(NODES[-1][0], END)
+        g.add_edge(node_id(a), node_id(b))
+    g.add_edge(node_id(NODES[-1][0]), END)
     return g.compile()
 
 
