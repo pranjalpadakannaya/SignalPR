@@ -4,14 +4,19 @@
 #   MODEL=qwen2.5-coder:32b bash scripts/serve/ollama_local.sh
 set -euo pipefail
 MODEL="${MODEL:-qwen2.5-coder:7b}"
+# Ollama's default context on a 16 GB machine is 4096 tokens and longer prompts are cut silently.
+# Review prompts are ~6k tokens plus up to 2k of reply, so raise it (applies to every model it serves).
+CTX="${OLLAMA_CONTEXT_LENGTH:-16384}"
 if ! command -v ollama >/dev/null 2>&1; then
   echo "Ollama is not installed. macOS: brew install ollama   Linux: curl -fsSL https://ollama.com/install.sh | sh"
   exit 1
 fi
 if ! curl -s -o /dev/null http://localhost:11434/api/tags; then
-  echo "▶ starting ollama serve (log: /tmp/ollama.log)"
-  (OLLAMA_KEEP_ALIVE=24h nohup ollama serve >/tmp/ollama.log 2>&1 &)
+  echo "▶ starting ollama serve, context $CTX tokens (log: /tmp/ollama.log)"
+  (OLLAMA_CONTEXT_LENGTH="$CTX" OLLAMA_KEEP_ALIVE=24h nohup ollama serve >/tmp/ollama.log 2>&1 &)
   for _ in $(seq 1 30); do curl -s -o /dev/null http://localhost:11434/api/tags && break; sleep 1; done
+else
+  echo "! ollama is already running; restart it with OLLAMA_CONTEXT_LENGTH=$CTX if it was started without it"
 fi
 echo "▶ pulling $MODEL (first time only)"
 ollama pull "$MODEL"
