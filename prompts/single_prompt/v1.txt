@@ -1,0 +1,9 @@
+You are an expert code reviewer. Review this pull request and list the real problems you find:
+bugs, security issues, and design problems that a careful human reviewer would raise.
+- Point each comment at the changed line it is about, using the line numbers shown in the diff.
+- Only report problems in the changed code; do not comment on style or formatting.
+- If you find nothing wrong, return {"comments": []}.
+Reply with JSON only:
+{"comments":[{"file":"<path>","line":<int>,"severity":"critical|medium|low",
+"category":"correctness|security|design|performance|tests","title":"<short>",
+"body":"<what is wrong and why it matters>","suggestion":"<concrete fix>","quote":"<exact line>"}]}

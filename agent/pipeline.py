@@ -20,14 +20,17 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field, fields
+from pathlib import Path
 from typing import Any, Callable, TypedDict
 
 from agent import evidence as evidence_step
 from agent import intent as intent_step
 from agent import llm, ranker, specialists, verifier
+from agent.llm_client import LLMError
 from agent.state import SEVERITIES, Comment, PRInput
 
 MODES = ("signalpr", "single_prompt", "tools_only", "size_rank")
+PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 
 @dataclass
@@ -183,18 +186,30 @@ def _run_nodes(state: ReviewState, progress=None) -> ReviewState:
     return state
 
 
-# ------------------------------------------------------------------ single-prompt baseline
-SINGLE_PROMPT = """You are an expert code reviewer. Review this pull request and list the problems you find.
-Reply with JSON only: {"comments":[{"file":"<path>","line":<int>,"severity":"critical|medium|low",
-"title":"<short>","body":"<explanation>","suggestion":"<fix>","quote":"<exact line>"}]}"""
+# ------------------------------------------------------------------ single-prompt baseline (#8)
+SINGLE_PROMPT_VERSION = "v1"
+SINGLE_PROMPT_CATEGORIES = ("correctness", "security", "design", "performance", "tests")
 
 
-def single_prompt_comments(pr: PRInput) -> list[Comment]:
-    diff = "\n\n".join(f"### {f.path}\n{f.numbered_patch(250)}" for f in pr.files)[:18000]
-    user = (
-        f"PR: {pr.title}\n{pr.description[:1500]}\n\nISSUE: {pr.issue_title}\n{pr.issue_body[:1500]}\n\nDIFF:\n{diff}"
+def single_prompt_system(version: str = SINGLE_PROMPT_VERSION) -> str:
+    """The baseline's system prompt, from prompts/single_prompt/<version>.txt (versioned, see prompts/README.md)."""
+    return (PROMPTS_DIR / "single_prompt" / f"{version}.txt").read_text().strip()
+
+
+def single_prompt_user(pr: PRInput) -> str:
+    """Diff + PR description + issue text: the same inputs and diff view SignalPR's specialists get."""
+    issue = f"ISSUE: {pr.issue_title}\n{pr.issue_body[:1500]}\n\n" if pr.has_issue else ""
+    return f"PR: {pr.title}\n{pr.description[:1500]}\n\n{issue}DIFF:\n{specialists.diff_context(pr)}"
+
+
+def single_prompt_comments(pr: PRInput, version: str = SINGLE_PROMPT_VERSION) -> list[Comment]:
+    data, _ = llm.chat_json(
+        single_prompt_system(version),
+        single_prompt_user(pr),
+        temperature=0.2,
+        tag=f"baseline/single_prompt/{version}",
+        max_tokens=2048,
     )
-    data, _ = llm.chat_json(SINGLE_PROMPT, user, temperature=0.2, tag="baseline/single_prompt")
     out = []
     for c in (data or {}).get("comments", []) if isinstance(data, dict) else []:
         if not isinstance(c, dict) or not c.get("file"):
@@ -204,11 +219,12 @@ def single_prompt_comments(pr: PRInput) -> list[Comment]:
         except (TypeError, ValueError):
             line = None
         f = pr.file(str(c["file"]))
+        cat = str(c.get("category", "")).lower()
         out.append(
             Comment(
                 file=f.path if f else str(c["file"]),
                 line=line,
-                category="correctness",
+                category=cat if cat in SINGLE_PROMPT_CATEGORIES else "correctness",
                 severity=c.get("severity") if c.get("severity") in SEVERITIES else "medium",
                 title=str(c.get("title", ""))[:140],
                 body=str(c.get("body", ""))[:1500],
@@ -234,8 +250,12 @@ def review(pr: PRInput, options: Options | dict | None = None, progress=None) ->
     if o.mode == "single_prompt":
         if not use_llm:
             raise RuntimeError("The single-prompt baseline needs an LLM server (see scripts/serve/README.md).")
-        t = time.time()
-        comments = single_prompt_comments(pr)
+        t, errors = time.time(), []
+        try:
+            comments = single_prompt_comments(pr)
+        except LLMError as e:  # one failed PR must not stop a benchmark run; it scores as no comments
+            comments = []
+            errors.append(f"single prompt: {type(e).__name__}: {str(e)[:120]}")
         risks = ranker.file_risk(pr)
         state: ReviewState = {
             "pr": pr,
@@ -244,11 +264,15 @@ def review(pr: PRInput, options: Options | dict | None = None, progress=None) ->
             "ranked": comments,
             "dropped": [],
             "risks": risks,
-            "errors": [],
+            "errors": errors,
             "intent": {"mode": "off", "requirements": [], "unrequested": []},
             "evidence": {"items": [], "tools": {}, "usage": {}},
             "trace": [
-                {"step": "single prompt", "ms": int((time.time() - t) * 1000), "detail": f"{len(comments)} comments"}
+                {
+                    "step": "single prompt",
+                    "ms": int((time.time() - t) * 1000),
+                    "detail": f"{len(comments)} comments (prompt {SINGLE_PROMPT_VERSION})",
+                }
             ],
         }
     else:

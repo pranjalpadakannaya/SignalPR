@@ -229,14 +229,12 @@ Reply with JSON only:
 "quote":"<exact line>","evidence":["E1"]}}]}}"""
 
 
-def _prompt(name, pr: PRInput, evidence, intent) -> str:
-    cats = SPECIALISTS[name]["cats"]
-    ev = [e for e in evidence if e.category in cats] or evidence[:15]
-    ev_txt = "\n".join(f"{e.id} {e.file}:{e.line or '-'} [{e.tool}/{e.rule}] {e.message}" for e in ev[:40]) or "(none)"
-    req = "\n".join(f"- [{r['status']}] {r['text']}" for r in intent.get("requirements", [])) or "(none)"
-    unreq = "\n".join(f"- {u['file']}: {u['reason']}" for u in intent.get("unrequested", [])) or "(none)"
+def diff_context(pr: PRInput, budget: int = 16000) -> str:
+    """The numbered diff every LLM reviewer sees: no binary, lock or generated files, largest files first,
+    files past the character budget listed as omitted. Shared with the single-prompt baseline (#8) so
+    both systems get the same view of the change."""
     files = [f for f in pr.files if not f.binary and not LOCK_RE.search(f.path) and not GEN_RE.search(f.path)]
-    budget, parts = 16000, []
+    parts = []
     for f in sorted(files, key=lambda x: -(x.additions)):
         block = f"### {f.path} ({f.status})\n{f.numbered_patch(250)}\n"
         if budget - len(block) < 0:
@@ -244,9 +242,18 @@ def _prompt(name, pr: PRInput, evidence, intent) -> str:
             continue
         budget -= len(block)
         parts.append(block)
+    return "\n".join(parts)
+
+
+def _prompt(name, pr: PRInput, evidence, intent) -> str:
+    cats = SPECIALISTS[name]["cats"]
+    ev = [e for e in evidence if e.category in cats] or evidence[:15]
+    ev_txt = "\n".join(f"{e.id} {e.file}:{e.line or '-'} [{e.tool}/{e.rule}] {e.message}" for e in ev[:40]) or "(none)"
+    req = "\n".join(f"- [{r['status']}] {r['text']}" for r in intent.get("requirements", [])) or "(none)"
+    unreq = "\n".join(f"- {u['file']}: {u['reason']}" for u in intent.get("unrequested", [])) or "(none)"
     return (
         f"PR: {pr.title}\n{pr.description[:1500]}\n\nREQUIREMENTS CHECK:\n{req}\nUNREQUESTED CHANGES:\n{unreq}\n\n"
-        f"TOOL EVIDENCE:\n{ev_txt}\n\nDIFF:\n" + "\n".join(parts)
+        f"TOOL EVIDENCE:\n{ev_txt}\n\nDIFF:\n" + diff_context(pr)
     )
 
 
