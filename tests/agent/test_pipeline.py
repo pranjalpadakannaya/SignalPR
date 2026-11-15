@@ -199,6 +199,23 @@ def test_single_prompt_baseline(monkeypatch):
     assert "ISSUE:" not in no_issue
 
 
+def test_single_prompt_salvages_truncated_reply(monkeypatch):
+    """A reply cut off by the token limit keeps its complete comments instead of scoring as none."""
+    one = '{"file": "app/search.py", "line": 5, "title": "SQLi", "body": "has } and { inside"}'
+    raw = '{"comments": [' + one + ", " + one + ', {"file": "app/search.py", "line": 8, "bo'
+    assert pipeline.salvage_comments(raw) == [json.loads(one)] * 2
+    assert pipeline.salvage_comments('{"comments": [{"file": "a"') == []
+    assert pipeline.salvage_comments("not json") == []
+
+    monkeypatch.setattr(llm, "status", lambda force=False: {"available": True, "reason": "", "model": "fake"})
+    # what llm.chat_json really returns here: extract_json falls back to the first complete object
+    monkeypatch.setattr(llm, "chat_json", lambda *a, **k: (json.loads(one), raw))
+    res = pipeline.review(PRInput.from_diff(DIFF), {"mode": "single_prompt"})
+    assert [c["line"] for c in res["comments"]] == [5, 5]  # duplicates kept: the baseline has no verifier
+    monkeypatch.setattr(llm, "chat_json", lambda *a, **k: (None, raw))
+    assert len(pipeline.review(PRInput.from_diff(DIFF), {"mode": "single_prompt"})["comments"]) == 2
+
+
 def test_single_prompt_llm_error_scores_as_no_comments(monkeypatch):
     fake_llm(monkeypatch, lambda *a: None)
 

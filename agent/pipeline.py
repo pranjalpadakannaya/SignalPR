@@ -18,6 +18,7 @@ consistency, ranker).
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -202,16 +203,41 @@ def single_prompt_user(pr: PRInput) -> str:
     return f"PR: {pr.title}\n{pr.description[:1500]}\n\n{issue}DIFF:\n{specialists.diff_context(pr)}"
 
 
+def salvage_comments(text: str) -> list[dict]:
+    """Every complete comment object in a reply that hit the token limit mid-JSON.
+
+    The 7B model sometimes repeats one comment until it runs out of tokens; without this the whole
+    reply fails to parse and the PR scores as if the model had said nothing."""
+    start = (text or "").find('"comments"')
+    start = text.find("[", start) if start != -1 else -1
+    if start == -1:
+        return []
+    dec, i, out = json.JSONDecoder(), start + 1, []
+    while True:
+        j = text.find("{", i)
+        if j == -1:
+            return out
+        try:
+            obj, i = dec.raw_decode(text, j)
+        except ValueError:  # the object cut off by the token limit
+            return out
+        if isinstance(obj, dict):
+            out.append(obj)
+
+
 def single_prompt_comments(pr: PRInput, version: str = SINGLE_PROMPT_VERSION) -> list[Comment]:
-    data, _ = llm.chat_json(
+    data, raw = llm.chat_json(
         single_prompt_system(version),
         single_prompt_user(pr),
         temperature=0.2,
         tag=f"baseline/single_prompt/{version}",
         max_tokens=2048,
     )
+    # On a truncated reply extract_json falls back to the first complete {...}, i.e. one comment, not the list.
+    if not isinstance(data, dict) or not isinstance(data.get("comments"), list):
+        data = {"comments": salvage_comments(raw)}
     out = []
-    for c in (data or {}).get("comments", []) if isinstance(data, dict) else []:
+    for c in data.get("comments") or []:
         if not isinstance(c, dict) or not c.get("file"):
             continue
         try:
