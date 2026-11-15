@@ -82,6 +82,10 @@ bash scripts/serve/ollama_local.sh                      # 7B
 MODEL=qwen2.5-coder:32b bash scripts/serve/ollama_local.sh
 ```
 
+The script starts `ollama serve` with `OLLAMA_CONTEXT_LENGTH=16384`. Ollama's default on a 16 GB machine is
+4096 tokens and it cuts longer prompts silently, which drops most of a review prompt. If Ollama is already
+running (for example the menu-bar app), quit it and let the script start it.
+
 ## Throughput (PRs/hour) for run budgets
 
 ```bash

@@ -1,0 +1,2 @@
+run_id	date	system	model	prompt_version	benchmark	subset	repeats	seed	judge	n_prs	precision	recall	f1	sev_weighted_recall	recall@1	recall@3	recall@5	comments_per_real_issue	commit	owner	notes
+20261115-1532_martian_8f08e4e	2026-11-15 15:32	Single-prompt LLM (same model)	qwen2.5-coder:7b	v1	martian		1	0	llm	50	0.0639	0.1456	0.0888	0.1468	0.0316	0.0886	0.1392	15.6522	8f08e4e	Pranjal Padakannaya	#8 single-prompt baseline, qwen2.5-coder:7b (Ollama, 16k ctx), Martian core profile, LLM judge = same 7B
