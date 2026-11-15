@@ -1,0 +1,18 @@
+run_id: 20261115-1532_martian_8f08e4e
+date: 2026-11-15 15:32
+owner: Pranjal Padakannaya
+commit: 8f08e4e
+benchmark: martian
+subset: null
+profile: core
+model: qwen2.5-coder:7b
+prompt_version: v1
+seed: 0
+judge: llm
+repeats: 1
+systems:
+- Single-prompt LLM (same model)
+skipped: {}
+notes: '#8 single-prompt baseline, qwen2.5-coder:7b (Ollama, 16k ctx), Martian core
+  profile, LLM judge = same 7B'
+extra: {}
