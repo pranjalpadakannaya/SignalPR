@@ -13,6 +13,22 @@ python -m eval --bench reviewbench --subset test_subset  # TEST set (25-PR slice
 python -m eval --bench reviewbench --repeats 3           # TEST set, all 219 PRs
 ```
 
+### Single-prompt baseline (#8)
+
+One prompt (`prompts/single_prompt/v1.txt`) with the diff, PR description and issue text, and the same
+diff view and model as SignalPR; no tools, verifier or ranker. Run it on Martian with each model and
+log every run:
+
+```bash
+# 7B (laptop: bash scripts/serve/ollama_local.sh) — 32B: MODEL=qwen2.5-coder:32b, or vLLM on Sol
+export SIGNALPR_LLM_PRESET=qwen-7b SIGNALPR_LLM_BACKEND=ollama
+python -m eval --bench martian --profile core --systems "Single-prompt LLM (same model)" \
+    --out results/eval/martian_single_prompt_7b.json
+python -m tracking log results/eval/martian_single_prompt_7b.json --prompt-version v1 --notes "#8 baseline, 7B"
+```
+
+The judge is the same model as the reviewer, so compare systems only within one model.
+
 Results go to `results/eval/<name>.json` and `.md`. Martian is loaded with `purpose="tune"`,
 ReviewBench with `purpose="eval"`, so the test-set guard in `benchmarks/registry.py` applies.
 

@@ -170,6 +170,63 @@ def test_baseline_modes(monkeypatch):
         pipeline.Options.from_dict({"mode": "nope"})
 
 
+def test_single_prompt_baseline(monkeypatch):
+    """#8: one prompt, same inputs as SignalPR (diff + PR description + issue), common comment format."""
+    seen = {}
+
+    def reply(system, user, sample):
+        seen["system"], seen["user"] = system, user
+        return {
+            "comments": [
+                {"file": "app/search.py", "line": 5, "severity": "critical", "category": "security", "title": "SQLi"},
+                {"file": "app/search.py", "line": "8", "severity": "high", "category": "style", "title": "bare"},
+                {"line": 3, "title": "no file, dropped"},
+            ]
+        }
+
+    calls = fake_llm(monkeypatch, reply)
+    pr = PRInput.from_diff(DIFF, title="Add search", description="search users", issue_title="Search", issue_body="Q")
+    res = pipeline.review(pr, {"mode": "single_prompt"})
+    assert seen["system"] == pipeline.single_prompt_system()  # loaded from prompts/single_prompt/v1.txt
+    assert "ISSUE: Search" in seen["user"] and "search users" in seen["user"]
+    assert "### app/search.py (added)" in seen["user"]  # same diff view as the specialists
+    assert calls == [{"tag": "baseline/single_prompt/v1", "sample": 0}]
+    got = [(c["line"], c["category"], c["severity"], c["source"]) for c in res["comments"]]
+    assert got == [(5, "security", "critical", "single_prompt/llm"), (8, "correctness", "medium", "single_prompt/llm")]
+    assert res["comments"][0]["snippet"] and not res["dropped"] and not res["llm"]["errors"]
+
+    no_issue = pipeline.single_prompt_user(PRInput.from_diff(DIFF, title="t"))
+    assert "ISSUE:" not in no_issue
+
+
+def test_single_prompt_salvages_truncated_reply(monkeypatch):
+    """A reply cut off by the token limit keeps its complete comments instead of scoring as none."""
+    one = '{"file": "app/search.py", "line": 5, "title": "SQLi", "body": "has } and { inside"}'
+    raw = '{"comments": [' + one + ", " + one + ', {"file": "app/search.py", "line": 8, "bo'
+    assert pipeline.salvage_comments(raw) == [json.loads(one)] * 2
+    assert pipeline.salvage_comments('{"comments": [{"file": "a"') == []
+    assert pipeline.salvage_comments("not json") == []
+
+    monkeypatch.setattr(llm, "status", lambda force=False: {"available": True, "reason": "", "model": "fake"})
+    # what llm.chat_json really returns here: extract_json falls back to the first complete object
+    monkeypatch.setattr(llm, "chat_json", lambda *a, **k: (json.loads(one), raw))
+    res = pipeline.review(PRInput.from_diff(DIFF), {"mode": "single_prompt"})
+    assert [c["line"] for c in res["comments"]] == [5, 5]  # duplicates kept: the baseline has no verifier
+    monkeypatch.setattr(llm, "chat_json", lambda *a, **k: (None, raw))
+    assert len(pipeline.review(PRInput.from_diff(DIFF), {"mode": "single_prompt"})["comments"]) == 2
+
+
+def test_single_prompt_llm_error_scores_as_no_comments(monkeypatch):
+    fake_llm(monkeypatch, lambda *a: None)
+
+    def boom(*a, **k):
+        raise pipeline.LLMError("server went away")
+
+    monkeypatch.setattr(llm, "chat_json", boom)
+    res = pipeline.review(PRInput.from_diff(DIFF), {"mode": "single_prompt"})
+    assert res["comments"] == [] and "server went away" in res["llm"]["errors"][0]
+
+
 def test_verifier_rules():
     pr = PRInput.from_diff(DIFF)
     ev = [Evidence("E1", "app/search.py", 8, "rules", "cor.bare_except", "correctness", "medium", "bare except")]
