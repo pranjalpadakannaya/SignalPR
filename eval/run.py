@@ -25,6 +25,7 @@ from eval.metrics import aggregate, pr_metrics
 SYSTEMS = {
     "SignalPR (full)": {"mode": "signalpr"},
     "Single-prompt LLM (same model)": {"mode": "single_prompt", "_needs_llm": True},
+    "PR-Agent (open source)": {"mode": "pr_agent", "_needs_llm": True},
     "Code-analysis tools only": {"mode": "tools_only"},
     "SignalPR, ranked by change size": {"mode": "size_rank"},
     "– intent checker": {"intent": False},

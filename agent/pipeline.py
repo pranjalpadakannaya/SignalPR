@@ -19,6 +19,7 @@ consistency, ranker).
 from __future__ import annotations
 
 import json
+import subprocess
 import time
 from dataclasses import dataclass, field, fields
 from pathlib import Path
@@ -30,7 +31,7 @@ from agent import llm, ranker, specialists, verifier
 from agent.llm_client import LLMError
 from agent.state import SEVERITIES, Comment, PRInput
 
-MODES = ("signalpr", "single_prompt", "tools_only", "size_rank")
+MODES = ("signalpr", "single_prompt", "pr_agent", "tools_only", "size_rank")
 PROMPTS_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 
@@ -273,15 +274,24 @@ def review(pr: PRInput, options: Options | dict | None = None, progress=None) ->
     if o.use_llm and not st["available"]:
         raise RuntimeError(f"LLM requested but not reachable: {st['reason']}")
 
-    if o.mode == "single_prompt":
+    if o.mode in ("single_prompt", "pr_agent"):
+        label = "single prompt" if o.mode == "single_prompt" else "PR-Agent"
         if not use_llm:
-            raise RuntimeError("The single-prompt baseline needs an LLM server (see scripts/serve/README.md).")
+            raise RuntimeError(f"The {label} baseline needs an LLM server (see scripts/serve/README.md).")
         t, errors = time.time(), []
         try:
-            comments = single_prompt_comments(pr)
+            if o.mode == "single_prompt":
+                comments = single_prompt_comments(pr)
+            else:
+                from baselines.pr_agent import PRAgentError, pr_agent_comments
+
+                try:
+                    comments = pr_agent_comments(pr, llm.client().config)
+                except (PRAgentError, subprocess.TimeoutExpired, ValueError) as e:
+                    raise LLMError(str(e)) from e
         except LLMError as e:  # one failed PR must not stop a benchmark run; it scores as no comments
             comments = []
-            errors.append(f"single prompt: {type(e).__name__}: {str(e)[:120]}")
+            errors.append(f"{label}: {type(e).__name__}: {str(e)[:120]}")
         risks = ranker.file_risk(pr)
         state: ReviewState = {
             "pr": pr,
@@ -295,9 +305,10 @@ def review(pr: PRInput, options: Options | dict | None = None, progress=None) ->
             "evidence": {"items": [], "tools": {}, "usage": {}},
             "trace": [
                 {
-                    "step": "single prompt",
+                    "step": label.lower(),
                     "ms": int((time.time() - t) * 1000),
-                    "detail": f"{len(comments)} comments (prompt {SINGLE_PROMPT_VERSION})",
+                    "detail": f"{len(comments)} comments"
+                    + (f" (prompt {SINGLE_PROMPT_VERSION})" if o.mode == "single_prompt" else ""),
                 }
             ],
         }
